@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Harvard Museums Images</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  </head>
+
+  <body>
+    <div id="app">
+      <h1>{{ pageTitle }}</h1>
+      <button @click="nextPage" class="btn btn-primary">Previous Page</button>
+      <button @click="previousPage" class="btn btn-primary">Next Page</button>
+      <ul>
+        <li style="list-style-type:none" v-for="object in imageObjects">
+          {{ object.url }}
+        </li>
+      </ul>
+      <div class="gallery">
+        <img class='harvard-image' v-for="object in imageObjects" :src="object.baseimageurl" :alt="object.copyright" />
+      </div>
+    </div>
+  </body>
+
+  <script src="https://unpkg.com/vue@2.0.3/dist/vue.js"></script>
+
+  <script>
+    var app = new Vue({
+      el: '#app',
+      data() {
+        return {
+          pageTitle: 'Harvard Museum Images',
+          imageObjects: [],
+          pageNumber: 1
+        }
+      },
+      created() {
+        this.getDataFromApi()
+      },
+      methods: {
+        async getDataFromApi() {
+          const response = await fetch(`https://api.harvardartmuseums.org/image?apikey=a330c770-1382-11e9-a016-6f6df1317a6c&page=${this.pageNumber}`)
+          const data = await response.json()
+          this.imageObjects = await data.records
+        },
+        previousPage: function() {
+          this.pageNumber += 1
+          this.getDataFromApi()
+        },
+        nextPage: function() {
+          if (this.pageNumber > 0) {
+            this.pageNumber -= 1
+            this.getDataFromApi()
+          } else {
+            console.log('cant go to page zero');
+          }
+        }
+      }
+    })
+  </script>
+  <style>
+    .harvard-image {
+      width: 500px;
+      min-height: 300px;
+    }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      grid-auto-flow: row dense;
+      grid-gap: 25px 25px;
+    }
+  </style>
+</html>
